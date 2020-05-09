@@ -12,6 +12,8 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System.Data.SqlClient;
 using System.IO;
+using System.Reflection;
+using System.Diagnostics;
 
 namespace ExpensesWebApp
 {
@@ -49,24 +51,40 @@ namespace ExpensesWebApp
             {
                 endpoints.MapControllers();
             });
+
+            ConnectAndCreate();
         }
         public void ConnectAndCreate()
-        { 
-        string connetionString;
-        SqlConnection cnn;
-        connetionString = @"Data Source=(LocalDb)\Database;User ID=Laimis;Password=12345";
-        var script = File.ReadAllText(@"C:\Users\Ieva\Documents\db.sql");
-        var sqlqueries = script.Split(new[] { "GO" }, StringSplitOptions.RemoveEmptyEntries);
-        cnn = new SqlConnection(connetionString);
-        var cmd = new SqlCommand("query", cnn);
-        cnn.Open();
-        foreach (var query in sqlqueries)
-            {
-                cmd.CommandText = query;
-                cmd.ExecuteNonQuery();
-            }
-        cnn.Close();
-        }
+        {
+            string connetionString = Configuration.GetConnectionString("MyConnStr");
+            SqlConnection cnn;
+            cnn = new SqlConnection(connetionString);
+            cnn.Open();
 
+            var assembly = Assembly.GetExecutingAssembly();
+            var allResourceNames = assembly.GetManifestResourceNames();
+            var resourceName = allResourceNames[0];
+            {
+                Stream stream = assembly.GetManifestResourceStream(resourceName);
+                StreamReader reader = new StreamReader(stream);
+                try
+                    {
+                        string sqlscript = reader.ReadToEnd();
+                        var sqlqueries = sqlscript.Split(new[] { "GO" }, StringSplitOptions.RemoveEmptyEntries);
+                        var cmd = new SqlCommand("query", cnn);
+                        foreach (var query in sqlqueries)
+                        {
+                            cmd.CommandText = query;
+                            cmd.ExecuteNonQuery();
+                        }
+                    }
+                finally
+                {
+                    ((IDisposable)reader).Dispose();
+                    ((IDisposable)stream).Dispose();
+                }
+            }
+            cnn.Close();
+        }
     }
 }
