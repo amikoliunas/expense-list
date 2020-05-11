@@ -52,39 +52,29 @@ namespace ExpensesWebApp
                 endpoints.MapControllers();
             });
 
-            ConnectAndCreate();
+            InitializeDatabase();
         }
-        public void ConnectAndCreate()
+        public void InitializeDatabase()
         {
-            string connetionString = Configuration.GetConnectionString("MyConnStr");
-            SqlConnection cnn;
-            cnn = new SqlConnection(connetionString);
-            cnn.Open();
 
             var assembly = Assembly.GetExecutingAssembly();
             var allResourceNames = assembly.GetManifestResourceNames();
             var resourceName = allResourceNames[0];
-            {
-                Stream stream = assembly.GetManifestResourceStream(resourceName);
-                StreamReader reader = new StreamReader(stream);
-                try
-                    {
-                        string sqlscript = reader.ReadToEnd();
-                        var sqlqueries = sqlscript.Split(new[] { "GO" }, StringSplitOptions.RemoveEmptyEntries);
-                        var cmd = new SqlCommand("query", cnn);
-                        foreach (var query in sqlqueries)
-                        {
-                            cmd.CommandText = query;
-                            cmd.ExecuteNonQuery();
-                        }
-                    }
-                finally
+            string DatabaseConnectionString = Configuration.GetConnectionString("MyConnStr");
+
+            using var conn = new SqlConnection(DatabaseConnectionString);
+            using Stream stream = assembly.GetManifestResourceStream(resourceName);
+            using StreamReader reader = new StreamReader(stream);
+                conn.Open();
+                string sqlscript = reader.ReadToEnd();
+                var sqlqueries = sqlscript.Split(new[] { "GO" }, StringSplitOptions.RemoveEmptyEntries);
+                var cmd = new SqlCommand("query", conn);
+                foreach (var query in sqlqueries)
                 {
-                    ((IDisposable)reader).Dispose();
-                    ((IDisposable)stream).Dispose();
+                    cmd.CommandText = query;
+                    cmd.ExecuteNonQuery();
                 }
-            }
-            cnn.Close();
+                conn.Close();
         }
     }
 }
