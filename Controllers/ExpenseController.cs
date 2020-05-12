@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
@@ -16,13 +13,13 @@ namespace ExpensesWebApp.Controllers
 
         public ExpenseController (ILogger<ExpenseController> logger)
         {
-            logger = _logger;
+            _logger = logger;
         }
 
         [HttpGet]
-        public IEnumerable<expense> Get()
+        public IEnumerable<Expense> Get()
         {
-            return Enumerable.Range(1, 1).Select(index => new expense
+            return Enumerable.Range(1, 1).Select(index => new Expense
             {
                 ExpenseSum = 10
             })

@@ -1,19 +1,12 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using System.Data.SqlClient;
 using System.IO;
 using System.Reflection;
-using System.Diagnostics;
 
 namespace ExpensesWebApp
 {
@@ -60,21 +53,21 @@ namespace ExpensesWebApp
             var assembly = Assembly.GetExecutingAssembly();
             var allResourceNames = assembly.GetManifestResourceNames();
             var resourceName = allResourceNames[0];
-            string DatabaseConnectionString = Configuration.GetConnectionString("MyConnStr");
+            string connStr = Configuration.GetConnectionString("DatabaseConnectionString");
 
-            using var conn = new SqlConnection(DatabaseConnectionString);
+            using var conn = new SqlConnection(connStr);
             using Stream stream = assembly.GetManifestResourceStream(resourceName);
             using StreamReader reader = new StreamReader(stream);
-                conn.Open();
-                string sqlscript = reader.ReadToEnd();
-                var sqlqueries = sqlscript.Split(new[] { "GO" }, StringSplitOptions.RemoveEmptyEntries);
-                var cmd = new SqlCommand("query", conn);
-                foreach (var query in sqlqueries)
-                {
-                    cmd.CommandText = query;
-                    cmd.ExecuteNonQuery();
-                }
-                conn.Close();
+            conn.Open();
+            string sqlscript = reader.ReadToEnd();
+            var sqlqueries = sqlscript.Split(new[] { "GO" }, StringSplitOptions.RemoveEmptyEntries);
+            var cmd = new SqlCommand("query", conn);
+            foreach (var query in sqlqueries)
+            {
+                cmd.CommandText = query;
+                cmd.ExecuteNonQuery();
+            }
+            conn.Close();
         }
     }
 }

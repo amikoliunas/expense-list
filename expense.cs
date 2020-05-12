@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace ExpensesWebApp
 {
-    public class expense
+    public class Expense
     {
         public double ExpenseSum { get; set; }
     }
