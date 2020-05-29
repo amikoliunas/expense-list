@@ -2,28 +2,39 @@
 using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using ExpensesWebApp.Utilities;
 
 namespace ExpensesWebApp.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+
     public class ExpenseController : ControllerBase
+
     {
         private readonly ILogger<ExpenseController> _logger;
 
-        public ExpenseController (ILogger<ExpenseController> logger)
+        public IExpenseManager _expenseManager;
+
+        public ExpenseController(ILogger<ExpenseController> logger, IExpenseManager expenseManager)
         {
             _logger = logger;
+            _expenseManager = expenseManager;
         }
-
+        
         [HttpGet]
-        public IEnumerable<Expense> Get()
+        public IEnumerable<ExpenseItem> Get()
         {
-            return Enumerable.Range(1, 1).Select(index => new Expense
+            return Enumerable.Range(1, 1).Select(index => new ExpenseItem
             {
-                ExpenseSum = 10
+                Expenses = 10
             })
             .ToArray();
+        }
+        [HttpPost]
+        public void Post (ExpenseItem expenseItem)
+        {
+            _expenseManager.Insert(expenseItem);
         }
 
     }
