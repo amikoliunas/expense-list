@@ -7,6 +7,7 @@ using Microsoft.Extensions.Hosting;
 using System.Data.SqlClient;
 using System.IO;
 using System.Reflection;
+using ExpensesWebApp.Utilities;
 
 namespace ExpensesWebApp
 {
@@ -16,13 +17,14 @@ namespace ExpensesWebApp
         {
             Configuration = configuration;
         }
-
         public IConfiguration Configuration { get; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
+            services.AddSingleton(typeof(IConnectionToDB), typeof(ConnectionToDB));
+            services.AddTransient(typeof(IExpenseManager), typeof(ExpenseManager));
 
         }
 
@@ -53,9 +55,8 @@ namespace ExpensesWebApp
             var assembly = Assembly.GetExecutingAssembly();
             var allResourceNames = assembly.GetManifestResourceNames();
             var resourceName = allResourceNames[0];
-            string connStr = Configuration.GetConnectionString("DatabaseConnectionString");
 
-            using var conn = new SqlConnection(connStr);
+            using var conn = new SqlConnection(Configuration.GetConnectionString("DatabaseConnectionString"));
             using Stream stream = assembly.GetManifestResourceStream(resourceName);
             using StreamReader reader = new StreamReader(stream);
             conn.Open();

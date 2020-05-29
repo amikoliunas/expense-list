@@ -5,8 +5,11 @@ using System.Threading.Tasks;
 
 namespace ExpensesWebApp
 {
-    public class Expense
+    public class ExpenseItem
     {
-        public double ExpenseSum { get; set; }
+        public DateTime ExpenseDate { get; set; }
+        public double Expenses { get; set; }
+        public int Expense_type_ID { get; set; }
+        public int User_ID { get; set; }
     }
 }
